@@ -1,6 +1,6 @@
 """
 Main Dash Application
-Soccer Club Administrative Dashboard
+Cal Men's Club Soccer Administrative Dashboard
 """
 
 import dash
@@ -26,7 +26,7 @@ app = dash.Dash(
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     ],
     suppress_callback_exceptions=True,
-    title="Soccer Club Admin Dashboard"
+    title="Cal Men's Club Soccer Dashboard"
 )
 
 # Custom CSS styling with UC Berkeley colors
@@ -157,19 +157,19 @@ def create_navbar(user_role=None):
                 )
             )
     
-    # Admin-only navigation items
-    if user_role == UserRoles.ADMIN:
+    # Executive-only navigation items
+    if user_role == UserRoles.EXEC:
         nav_items.append(
             dbc.DropdownMenu(
                 children=[
                     dbc.DropdownMenuItem(
                         [html.I(className=item['icon']), " ", item['name']], 
                         href=item['path']
-                    ) for item in NavigationConfig.ADMIN_NAV_ITEMS
+                    ) for item in NavigationConfig.EXEC_NAV_ITEMS
                 ],
                 nav=True,
                 in_navbar=True,
-                label=[html.I(className="fas fa-cog"), " Admin"],
+                label=[html.I(className="fas fa-cog"), " Executive"],
                 className="me-3"
             )
         )
@@ -192,7 +192,7 @@ def create_navbar(user_role=None):
         dbc.Container([
             dbc.NavbarBrand([
                 html.I(className="fas fa-futbol me-2"),
-                "Soccer Club Admin"
+                "Cal Men's Club Soccer"
             ], href="/dashboard"),
             dbc.Nav(nav_items + [user_dropdown], className="ms-auto", navbar=True)
         ]),
@@ -214,7 +214,7 @@ def create_login_page():
                                 html.Div([
                                     html.I(className="fas fa-futbol fa-3x mb-4", 
                                           style={'color': Colors.UC_BLUE}),
-                                    html.H2("Soccer Club Admin", 
+                                    html.H2("Cal Men's Club Soccer", 
                                            className="mb-4", 
                                            style={'color': Colors.UC_BLUE}),
                                     html.P("Please sign in to access your dashboard", 
@@ -268,24 +268,19 @@ def create_dashboard_page(user_role):
     """Create dashboard page based on user role"""
     
     # Stats cards - content varies by role
-    if user_role == UserRoles.ADMIN:
+    if user_role == UserRoles.EXEC:
         stats = [
             {"title": "Total Members", "value": "45", "icon": "fas fa-users", "color": "primary"},
             {"title": "Active Events", "value": "8", "icon": "fas fa-calendar", "color": "success"},
             {"title": "Pending Payments", "value": "$2,450", "icon": "fas fa-dollar-sign", "color": "warning"},
             {"title": "Attendance Rate", "value": "87%", "icon": "fas fa-chart-line", "color": "info"}
         ]
-    elif user_role == UserRoles.COACH:
-        stats = [
-            {"title": "My Events", "value": "5", "icon": "fas fa-calendar", "color": "primary"},
-            {"title": "Players", "value": "22", "icon": "fas fa-users", "color": "success"},
-            {"title": "Avg Attendance", "value": "19", "icon": "fas fa-chart-line", "color": "info"}
-        ]
     else:  # Member
         stats = [
             {"title": "My Attendance", "value": "92%", "icon": "fas fa-calendar-check", "color": "success"},
             {"title": "Payment Status", "value": "Paid", "icon": "fas fa-check-circle", "color": "primary"},
-            {"title": "Next Event", "value": "Tomorrow", "icon": "fas fa-clock", "color": "warning"}
+            {"title": "Next Event", "value": "Tomorrow", "icon": "fas fa-clock", "color": "warning"},
+            {"title": "Events Attended", "value": "23", "icon": "fas fa-futbol", "color": "info"}
         ]
     
     stat_cards = []
@@ -338,8 +333,9 @@ def create_dashboard_page(user_role):
                             html.Ul([
                                 html.Li("Recent attendance records"),
                                 html.Li("Upcoming events"),
-                                html.Li("Payment reminders" if user_role != UserRoles.MEMBER else "Payment status"),
-                                html.Li("Team announcements")
+                                html.Li("Payment management" if user_role == UserRoles.EXEC else "Payment status"),
+                                html.Li("Team announcements"), 
+                                html.Li("Member management tools" if user_role == UserRoles.EXEC else "Personal stats")
                             ])
                         ])
                     ])
@@ -407,7 +403,7 @@ def display_page(pathname, session):
     if not session.get('logged_in', False):
         return create_login_page()
     
-    user_role = session.get('role', UserRoles.GUEST)
+    user_role = session.get('role', UserRoles.MEMBER)
     
     # Create navbar for authenticated users
     navbar = create_navbar(user_role)
@@ -445,13 +441,13 @@ def display_page(pathname, session):
                 dbc.Alert("Access denied. You don't have permission to view this page.", color="danger")
             ])
     
-    # Admin-only pages
+    # Executive-only pages
     elif pathname == '/members':
         if Permissions.has_permission(user_role, 'member_management'):
             content = create_placeholder_page('member management', user_role)
         else:
             content = html.Div([
-                dbc.Alert("Access denied. Admin privileges required.", color="danger")
+                dbc.Alert("Access denied. Executive privileges required.", color="danger")
             ])
     
     elif pathname == '/events':
@@ -459,7 +455,21 @@ def display_page(pathname, session):
             content = create_placeholder_page('event management', user_role)
         else:
             content = html.Div([
-                dbc.Alert("Access denied. Admin privileges required.", color="danger")
+                dbc.Alert("Access denied. Executive privileges required.", color="danger")])
+
+    
+
+    elif pathname == '/reports':
+
+        if Permissions.has_permission(user_role, 'financial_reports'):
+
+            content = create_placeholder_page('financial reports', user_role)
+
+        else:
+
+            content = html.Div([
+
+                dbc.Alert("Access denied. Executive privileges required.", color="danger")
             ])
     
     else:
@@ -489,8 +499,7 @@ def handle_login(n_clicks, username, password, session):
     
     # Mock authentication - in production, this would verify against database/API
     mock_users = {
-        'admin': {'password': 'admin123', 'role': UserRoles.ADMIN},
-        'coach': {'password': 'coach123', 'role': UserRoles.COACH},
+        'executive': {'password': 'executive123', 'role': UserRoles.EXEC},
         'member': {'password': 'member123', 'role': UserRoles.MEMBER}
     }
     
@@ -506,7 +515,7 @@ def handle_login(n_clicks, username, password, session):
     else:
         # Failed login
         message = dbc.Alert(
-            "Invalid username or password. Try: admin/admin123, coach/coach123, or member/member123",
+            "Invalid username or password. Try: executive/executive123 or member/member123",
             color="danger",
             className="mt-3"
         )
@@ -544,13 +553,12 @@ if __name__ == '__main__':
     else:
         print("✓ Configuration validated successfully!")
     
-    print(f"\nStarting Soccer Club Admin Dashboard...")
+    print(f"\nStarting Cal Men's Club Soccer Dashboard...")
     print(f"Environment: {app_config.ENVIRONMENT}")
     print(f"Debug Mode: {app_config.DEBUG}")
     print(f"Access URL: {app_config.BASE_URL}")
     print("\nTest Login Credentials:")
-    print("  Admin: admin / admin123")
-    print("  Coach: coach / coach123") 
+    print("  Executive: executive / executive123") 
     print("  Member: member / member123")
     
     # Run the app

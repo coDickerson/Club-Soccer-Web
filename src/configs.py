@@ -118,15 +118,13 @@ class Colors:
 # User Roles and Permissions
 class UserRoles:
     """Define user roles and their permissions"""
-    ADMIN = 'admin'
-    COACH = 'coach'
+    EXEC = 'exec'
     MEMBER = 'member'
-    GUEST = 'guest'
 
 class Permissions:
     """Define what each role can access"""
     ROLE_PERMISSIONS = {
-        UserRoles.ADMIN: {
+        UserRoles.EXEC: {
             'dashboard': True,
             'attendance': True,
             'settings': True,
@@ -134,37 +132,25 @@ class Permissions:
             'member_management': True,
             'event_management': True,
             'financial_reports': True,
-            'user_management': True
-        },
-        UserRoles.COACH: {
-            'dashboard': True,
-            'attendance': True,
-            'settings': False,
-            'payments': False,
-            'member_management': True,
-            'event_management': True,
-            'financial_reports': False,
-            'user_management': False
+            'user_management': True,
+            'view_all_payments': True,
+            'manage_events': True,
+            'manage_members': True,
+            'strategic_planning': True,
+            'executive_dashboard': True
         },
         UserRoles.MEMBER: {
             'dashboard': True,
             'attendance': True,
-            'settings': True,  # Only personal settings
-            'payments': True,  # Only own payments
+            'settings': True,     # Only personal settings
+            'payments': True,     # Only own payments
             'member_management': False,
             'event_management': False,
             'financial_reports': False,
-            'user_management': False
-        },
-        UserRoles.GUEST: {
-            'dashboard': False,
-            'attendance': False,
-            'settings': False,
-            'payments': False,
-            'member_management': False,
-            'event_management': False,
-            'financial_reports': False,
-            'user_management': False
+            'user_management': False,
+            'view_all_payments': False,
+            'manage_events': False,
+            'manage_members': False
         }
     }
     
@@ -204,8 +190,8 @@ class NavigationConfig:
         }
     ]
     
-    # Admin-only navigation items
-    ADMIN_NAV_ITEMS = [
+    # Executive-only navigation items
+    EXEC_NAV_ITEMS = [
         {
             'name': 'Member Management',
             'path': '/members',

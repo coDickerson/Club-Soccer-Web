@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Soccer Club Admin Dashboard Runner
+Cal Men's Club Soccer Dashboard Runner
 Entry point for running the application
 """
 
@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 if __name__ == '__main__':
     from app import app
     
-    print("🚀 Starting Soccer Club Admin Dashboard...")
+    print("🚀 Starting Cal Men's Club Soccer Dashboard...")
     print("=" * 50)
     
     # Import and run the main application
